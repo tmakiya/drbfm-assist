@@ -1,0 +1,10 @@
+[logger]
+level = "debug"
+messageFormat = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+[server]
+runOnSave = true
+headless = true
+
+[browser]
+gatherUsageStats = false

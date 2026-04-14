@@ -1,0 +1,89 @@
+Your task is to extract information from the provided XML content into a JSON array. Adhere strictly to the specified attribute names and formats. Do not include any extra text, comments, or code in your response—only the final JSON array.
+
+Example Output Format:
+[
+  {
+    "doc_id": "...",
+    "unit_original": "...",
+    ...
+  },
+  {
+    "doc_id": "...",
+    "unit_original": "...",
+    ...
+  }
+]
+
+Think step-by-step like a real engineer (follow the REASONING WORKFLOW). If an attribute cannot be determined from the provided XML, return an empty string “”.
+
+ATTRIBUTES TO EXTRACT (keys must match exactly):
+Each record must contain the following keys:
+
+- `doc_id`: Generate an 8-digit random number for each record.
+- `function`: Extract from the column with the header "機能" to get information about the function.
+- `cause`: Find columns with headers "心配点はどんな場合に生じるか", "要因・原因", and "他に考えるべき要因はないか". Combine their content into a single string with the format: `"要因・原因: [content from 心配点はどんな場合に生じるか][content from 要因・原因] \nその他: [content from 他に考えるべき要因はないか]"`.
+- `content`: Combine information from columns "部品名", "変更に関わる心配点", and "心配点はどんな場合に生じるか" to create a descriptive Japanese sentence explaining which failure mode is expected for which change on which part.
+- `title`: Combine the content from the "部品名" column and the "変更点とその目的" column, separated by a forward slash ('/'). Format: `"[部品名]/[変更点とその目的]"`.
+- `project_number`: If the input `file_name` matches the pattern `チェンジDRワークシート_XXXXX(YYYYY).xml`, extract only the `XXXXX` part. Otherwise, use the full `file_name`.
+- `unit_part_change`: From columns with headers like "部品名" or "部品名/変更点とその目的", extract the information related to the change point. Be flexible with column names as they can vary.
+- `unit_original`: From columns with headers like "部品名" or "部品名/変更点とその目的", extract only nouns that are likely to be industrial product parts (e.g., ボデー, アーム, ヒンジピン, ボルト). Be flexible with column names as they can vary.
+- `countermeasures`: Extract information from columns with headers "心配点を除くためにどんな設計をしたか", "推奨する対応(チェンジDRの結果)", "チェンジDRで示された設計へ反映すべき項目", "チェンジDRで示された製造へ反映すべき項目", "チェンジDRで示された評価へ反映すべき項目". Format as a single string: `"header1: content1\nheader2: content2..."`.
+- `recurrence_prevention`: Always "".
+- `occurrence_step`: Always “チェンジDRワークシート”.
+- `model_number`: Product name extracted from the header area (e.g., a row containing “製品名”).
+- `importance`: Extract from the column with the header "リスクランク" (Risk Rank).
+- `cause_unit`: The product name, same as `model_number`.
+- `cause_part`: From columns with headers like "部品名" or "部品名/変更点とその目的", extract only nouns that are likely to be industrial product parts (e.g., ボデー, アーム, ヒンジピン, ボルト). Be flexible with column names as they can vary, as the target column might contain both the part name and change details.
+- `occurrence_condition`: From columns "心配点はどんな場合に生じるか" and "他に考えるべき要因はないか", extract text that describes a specific condition under which the product is used that could cause a failure.
+- `failure_mode`: Extract from columns with headers "変更に関わる心配点(故障モード)" and "他に心配点はないか". Format as a single string: `"変更がもたらす機能の喪失, 商品性の欠如: [content from first column or 'なし']\nその他: [content from second column]"`.
+- `failure_effect`: Extract from the column with the header "お客さま影響".
+- `reasoning`: Provide a detailed, step-by-step reasoning for how you determined the values for `failure_mode`, `failure_effect`, `occurrence_condition`, `cause_unit`, `cause_part`, `unit_part_change`, and `countermeasures`. For each field, quote the source text from the input and explain your logic. Follow the example format below:
+  1. Failure Mode & Effect: [Your reasoning here, quoting source text]
+  2. Occurrence Condition: [Your reasoning here, quoting source text]
+  3. Cause Unit & Part: [Your reasoning here, quoting source text]
+  4. Unit/Part Change: [Your reasoning here, quoting source text]
+  5. Countermeasures: [Your reasoning here, quoting source text]
+
+All values must be strings. Missing or empty → “”.
+doc_id must be a new random UUID per record.
+
+CRITICAL RULES
+	0.	Input format
+User provides JSON:
+{
+“xml_content”: “…”,
+“file_name”: “original_filename.xml”
+}
+Use xml_content for extraction; file_name is used for `project_number`.
+	1.	XML structure
+The input XML contains  with multiple  elements. Each row contains 0 or more cell tags , , …, , representing Excel columns.
+	2.	Detect model number (product name)
+Find a row containing “製品名”. The actual product name is in an adjacent cell (typically column B). Extract this and store as model_number for all records.
+	3.	Identify concern rows
+A row becomes one output record if the column for "変更に関わる心配点" (roughly column D) contains meaningful non-header text describing a real concern or failure mode. Ignore header rows (e.g., those containing “変更に関わる心配点（故障ﾓｰﾄﾞ）”).
+	3.1. **Completeness**: You must process all data rows from start to finish. Do not stop prematurely. Every single row that qualifies as a concern must be included in the output.
+	4.  **Column Mapping is NOT Fixed**: The column letters (A, B, C...) are hints. The actual column positions can shift. **You must identify columns by their header text, not their letter.** For example, find the column with "部品名" to get `unit_original`.
+	5.  **`unit_original`**: Extract from the column with the header "部品名" or "部品名 / 変更点". Do not perform any inheritance; this will be handled in post-processing.
+	6.  **`failure_mode`**:
+	    - Find the column with the header "変更に関わる心配点(故障モード)" and the column with "他に心配点はないか".
+	    - Combine them into a single string: `"変更がもたらす機能の喪失, 商品性の欠如: [content from first column or 'なし']\nその他: [content from second column]"`.
+	7.  **`occurrence_condition`**:
+	    - Find columns with headers "心配点はどんな場合に生じるか" and "他に考えるべき要因はないか".
+	    - Extract text that describes a specific user condition causing the failure.
+	8.  **`failure_effect`**:
+	    - Find the column with the header "お客さま影響" and extract its content.
+	9.  **`countermeasures`**:
+	    - Find the columns with the following headers: "心配点を除くためにどんな設計をしたか", "推奨する対応(チェンジDRの結果)", "チェンジDRで示された設計へ反映すべき項目", "チェンジDRで示された製造へ反映すべき項目", "チェンジDRで示された評価へ反映すべき項目".
+	    - Combine them into a single string, with each part preceded by its header. For example: `"心配点を除くためにどんな設計をしたか: [content]\n推奨する対応(チェンジDRの結果): [content]..."`.
+	9.	recurrence_prevention
+Always “”.
+	10.	occurrence_step
+Always “チェンジDRワークシート”.
+	11.	importance
+Find the column with the header "リスクランク" and extract its content. Do not rely on a fixed column coordinate like 'J'.
+	12.	project_number
+If the `file_name` matches the pattern `チェンジDRワークシート_XXXXX(YYYYY).xml`, extract only the `XXXXX` part. Otherwise, use the full `file_name`.
+	13.	doc_id
+Generate an 8-digit UUID for each record.
+	14.	Output format
+Return only a JSON array […]. No explanation, no markdown, no comments.

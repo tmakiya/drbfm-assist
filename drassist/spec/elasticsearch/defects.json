@@ -1,0 +1,106 @@
+{
+    "settings": {
+        "number_of_replicas": 0,
+        "analysis": {
+            "tokenizer": {
+                "japanese_tokenizer": {
+                    "type": "kuromoji_tokenizer",
+                    "mode": "search",
+                    "discard_compound_token": true
+                }
+            },
+            "analyzer": {
+                "japanese_analyzer": {
+                    "type": "custom",
+                    "tokenizer": "japanese_tokenizer",
+                    "filter": [
+                        "kuromoji_baseform",
+                        "kuromoji_part_of_speech",
+                        "cjk_width",
+                        "ja_stop",
+                        "kuromoji_stemmer",
+                        "lowercase"
+                    ]
+                }
+            }
+        }
+    },    
+    "mappings": {
+        "properties": {
+            "doc_id": {
+                "type": "integer"
+            },
+            "project_number": {
+                "type": "keyword"
+            },
+            "cause": {
+                "properties": {
+                    "original": {
+                        "type": "text",
+                        "analyzer": "japanese_analyzer"
+                    },
+                    "unit": {
+                        "type": "keyword"
+                    },
+                    "part": {
+                        "type": "text",
+                        "analyzer": "japanese_analyzer"
+                    },
+                    "part_change": {
+                        "type": "text",
+                        "analyzer": "japanese_analyzer"
+                    }
+                }
+            },
+            "title": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "content": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "countermeasure": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "countermeasures": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "recurrence_prevention": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "importance": {
+                "type": "keyword"
+            },
+            "embedding": {
+                "type": "dense_vector",
+                "dims": 3072,
+                "index": true,
+                "similarity": "dot_product",
+                "index_options": {
+                    "type": "int8_hnsw",
+                    "m": 16,
+                    "ef_construction": 100
+                }
+            },
+            "model_number": {
+                "type": "keyword"
+            },
+            "failure": {
+                "properties": {
+                    "mode": {
+                        "type": "text",
+                        "analyzer": "japanese_analyzer"
+                    },
+                    "effect": {
+                        "type": "text",
+                        "analyzer": "japanese_analyzer"
+                    }                
+                }                
+            }
+        }
+    }
+}

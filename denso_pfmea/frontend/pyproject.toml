@@ -1,0 +1,77 @@
+[project]
+name = "denso-pfmea-frontend"
+version = "0.1.0"
+description = "PFMEA AI Workflow Frontend - Streamlit Application"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit>=1.50.0",
+    "pandas>=2.2.0",
+    "openpyxl>=3.1.0",
+    "langgraph-sdk>=0.1.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "PyYAML>=6.0.0",
+    "PyJWT>=2.0.0",
+    "pyarrow>=18.0.0",
+    "bleach>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+    "pandas-stubs>=2.0.0",
+    "types-PyYAML>=6.0.0",
+    "types-openpyxl>=3.1.0",
+    "types-bleach>=6.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=73.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+ignore = ["E501"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "src.common.bop.*",
+    "src.common.single_instance",
+    "src.services.pfmea_ai",
+    "src.services.pfmea.mapping_jobs",
+    "src.services.pfmea.function_mapper",
+    "src.services.pfmea.mapping_execution",
+    "src.services.pfmea.mapping_runtime",
+    "src.services.change_pipeline.*",
+    "src.ui.pages.main.llm_results_renderer",
+    "src.ui.pages.main.llm_result_parser",
+    "src.ui.pages.main.llm_coordinator",
+    "src.ui.pages.main.module_loader",
+    "src.ui.components",
+    "src.client",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "google.*",
+    "google.genai.*",
+    "google.oauth2.*",
+]
+ignore_missing_imports = true

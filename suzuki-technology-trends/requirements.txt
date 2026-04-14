@@ -1,0 +1,42 @@
+# Streamlit関連
+streamlit>=1.28.0,<2.0.0
+
+# Google Generative AI関連
+google-generativeai>=0.8.0,<0.9.0
+
+# LangChain関連
+langchain>=0.1.0,<1.0.0
+langchain-google-genai>=2.0.0,<3.0.0
+langchain-community>=0.0.20,<1.0.0
+langchain-core>=0.1.0,<1.0.0
+langchain-text-splitters>=0.0.1,<1.0.0
+
+# Protobuf（Python 3.14互換性のため）
+protobuf>=5.0.0,<6.0.0
+
+# データ処理
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 非同期処理
+nest-asyncio>=1.5.8
+
+# テキスト処理
+markdown>=3.4.0
+
+# PDF処理
+PyMuPDF>=1.23.0
+
+# 画像処理・OCR
+Pillow>=10.0.0
+pytesseract>=0.3.10
+
+# 環境変数管理
+python-dotenv>=1.0.0
+
+# 埋め込みモデル（オプション、HuggingFaceEmbeddings用）
+sentence-transformers>=2.2.0
+
+# FAISS（ベクトルストア用）
+faiss-cpu>=1.7.4
+

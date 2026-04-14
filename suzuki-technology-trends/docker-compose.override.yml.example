@@ -1,0 +1,22 @@
+# 開発環境用のオーバーライド設定例
+# このファイルを docker-compose.override.yml にコピーして使用
+
+version: '3.8'
+
+services:
+  backend:
+    environment:
+      - LOG_LEVEL=DEBUG
+    volumes:
+      # 開発時はホストのコードをマウントしてホットリロード
+      - ./backend:/app
+      - ./shared:/app/shared
+
+  frontend:
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+

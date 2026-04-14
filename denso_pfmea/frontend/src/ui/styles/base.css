@@ -1,0 +1,680 @@
+/**
+ * PFMEA UI Design System - Base CSS
+ *
+ * This file defines CSS custom properties (variables) for the design system.
+ * Import this file to apply consistent styling across the application.
+ *
+ * Usage in Streamlit:
+ *   from src.ui.design_system import apply_base_styles
+ *   apply_base_styles()
+ */
+
+/* ===================================================================
+   CSS Custom Properties - Light Theme (Default)
+   =================================================================== */
+
+:root {
+  /* Color Palette - Primary */
+  --pfmea-primary-50: #E3F2FD;
+  --pfmea-primary-100: #BBDEFB;
+  --pfmea-primary-200: #90CAF9;
+  --pfmea-primary-300: #64B5F6;
+  --pfmea-primary-400: #42A5F5;
+  --pfmea-primary-500: #2196F3;
+  --pfmea-primary-600: #1E88E5;
+  --pfmea-primary-700: #1976D2;
+  --pfmea-primary-800: #1565C0;
+  --pfmea-primary-900: #0D47A1;
+
+  --pfmea-primary: var(--pfmea-primary-700);
+  --pfmea-primary-light: var(--pfmea-primary-400);
+  --pfmea-primary-dark: var(--pfmea-primary-800);
+
+  /* Color Palette - Semantic */
+  --pfmea-success: #2E7D32;
+  --pfmea-success-light: #A5D6A7;
+  --pfmea-warning: #F57C00;
+  --pfmea-warning-light: #FFCC80;
+  --pfmea-error: #C62828;
+  --pfmea-error-light: #EF9A9A;
+  --pfmea-info: #0288D1;
+  --pfmea-info-light: #81D4FA;
+
+  /* Color Palette - Neutral */
+  --pfmea-white: #FFFFFF;
+  --pfmea-black: #000000;
+  --pfmea-gray-50: #FAFAFA;
+  --pfmea-gray-100: #F5F5F5;
+  --pfmea-gray-200: #EEEEEE;
+  --pfmea-gray-300: #E0E0E0;
+  --pfmea-gray-400: #BDBDBD;
+  --pfmea-gray-500: #9E9E9E;
+  --pfmea-gray-600: #757575;
+  --pfmea-gray-700: #616161;
+  --pfmea-gray-800: #424242;
+  --pfmea-gray-900: #212121;
+
+  /* Surface Colors */
+  --pfmea-surface: var(--pfmea-white);
+  --pfmea-surface-variant: var(--pfmea-gray-100);
+  --pfmea-background: var(--pfmea-gray-50);
+
+  /* Text Colors */
+  --pfmea-text-primary: var(--pfmea-gray-900);
+  --pfmea-text-secondary: #5F5F5F;
+  --pfmea-text-disabled: #949494;
+  --pfmea-text-on-primary: var(--pfmea-white);
+
+  /* Border Colors */
+  --pfmea-border: var(--pfmea-gray-300);
+  --pfmea-border-light: var(--pfmea-gray-200);
+  --pfmea-border-focus: var(--pfmea-primary);
+
+  /* PFMEA Domain Colors */
+  --pfmea-ai-generated: #D32F2F;
+  --pfmea-row-even: #E8F4F8;
+  --pfmea-header-bg: var(--pfmea-gray-100);
+
+  /* Table Colors */
+  --pfmea-table-border: #DDDDDD;
+  --pfmea-table-header-bg: var(--pfmea-gray-100);
+  --pfmea-table-row-even: var(--pfmea-gray-50);
+  --pfmea-table-container-border: var(--pfmea-gray-300);
+
+  /* Typography */
+  --pfmea-font-family-primary: "BIZ UDPゴシック", "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --pfmea-font-family-mono: "Source Code Pro", "Consolas", monospace;
+
+  --pfmea-font-size-xs: 0.75rem;    /* 12px */
+  --pfmea-font-size-sm: 0.875rem;   /* 14px */
+  --pfmea-font-size-md: 1rem;       /* 16px */
+  --pfmea-font-size-lg: 1.125rem;   /* 18px */
+  --pfmea-font-size-xl: 1.25rem;    /* 20px */
+  --pfmea-font-size-2xl: 1.5rem;    /* 24px */
+  --pfmea-font-size-3xl: 1.875rem;  /* 30px */
+
+  --pfmea-font-weight-normal: 400;
+  --pfmea-font-weight-medium: 500;
+  --pfmea-font-weight-semibold: 600;
+  --pfmea-font-weight-bold: 700;
+
+  --pfmea-line-height-tight: 1.25;
+  --pfmea-line-height-normal: 1.5;
+  --pfmea-line-height-relaxed: 1.625;
+
+  /* Spacing (8px grid) */
+  --pfmea-spacing-unit: 8px;
+  --pfmea-spacing-none: 0;
+  --pfmea-spacing-xs: 4px;
+  --pfmea-spacing-sm: 8px;
+  --pfmea-spacing-md: 16px;
+  --pfmea-spacing-lg: 24px;
+  --pfmea-spacing-xl: 32px;
+  --pfmea-spacing-xxl: 48px;
+
+  /* Component Spacing */
+  --pfmea-table-cell-padding: 8px 16px;
+  --pfmea-card-padding: var(--pfmea-spacing-md);
+  --pfmea-input-padding: var(--pfmea-spacing-sm);
+  --pfmea-page-padding: var(--pfmea-spacing-lg);
+  --pfmea-section-gap: var(--pfmea-spacing-xl);
+  --pfmea-component-gap: var(--pfmea-spacing-md);
+
+  /* Shadows */
+  --pfmea-shadow-none: none;
+  --pfmea-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --pfmea-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --pfmea-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --pfmea-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --pfmea-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --pfmea-shadow-focus: 0 0 0 3px rgba(25, 118, 210, 0.3);
+
+  /* Border Radius */
+  --pfmea-radius-none: 0;
+  --pfmea-radius-xs: 2px;
+  --pfmea-radius-sm: 4px;
+  --pfmea-radius-md: 8px;
+  --pfmea-radius-lg: 12px;
+  --pfmea-radius-xl: 16px;
+  --pfmea-radius-full: 9999px;
+
+  /* Transitions */
+  --pfmea-transition-duration-fast: 100ms;
+  --pfmea-transition-duration-normal: 200ms;
+  --pfmea-transition-duration-slow: 300ms;
+  --pfmea-transition-default: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===================================================================
+   Dark Theme
+   =================================================================== */
+
+[data-theme="dark"],
+.dark-theme {
+  /* Primary - brighter for dark backgrounds */
+  --pfmea-primary: #90CAF9;
+  --pfmea-primary-light: #BBDEFB;
+  --pfmea-primary-dark: #64B5F6;
+
+  /* Semantic - adjusted for contrast */
+  --pfmea-success: #81C784;
+  --pfmea-success-light: #A5D6A7;
+  --pfmea-warning: #FFB74D;
+  --pfmea-warning-light: #FFCC80;
+  --pfmea-error: #E57373;
+  --pfmea-error-light: #EF9A9A;
+  --pfmea-info: #4FC3F7;
+  --pfmea-info-light: #81D4FA;
+
+  /* Neutral - inverted */
+  --pfmea-gray-50: #303030;
+  --pfmea-gray-100: #424242;
+  --pfmea-gray-200: #616161;
+  --pfmea-gray-300: #757575;
+  --pfmea-gray-400: #9E9E9E;
+  --pfmea-gray-500: #BDBDBD;
+  --pfmea-gray-600: #E0E0E0;
+  --pfmea-gray-700: #EEEEEE;
+  --pfmea-gray-800: #F5F5F5;
+  --pfmea-gray-900: #FAFAFA;
+
+  /* Surface */
+  --pfmea-surface: #121212;
+  --pfmea-surface-variant: #1E1E1E;
+  --pfmea-background: #0A0A0A;
+
+  /* Text */
+  --pfmea-text-primary: #FFFFFF;
+  --pfmea-text-secondary: #B0B0B0;
+  --pfmea-text-disabled: #6B6B6B;
+  --pfmea-text-on-primary: #000000;
+
+  /* Border */
+  --pfmea-border: #424242;
+  --pfmea-border-light: #303030;
+
+  /* PFMEA Domain */
+  --pfmea-ai-generated: #EF5350;
+  --pfmea-row-even: #1A2A35;
+  --pfmea-header-bg: #1E1E1E;
+
+  /* Table */
+  --pfmea-table-border: #424242;
+  --pfmea-table-header-bg: #1E1E1E;
+  --pfmea-table-row-even: #1A1A1A;
+  --pfmea-table-container-border: #303030;
+
+  /* Shadows - increased opacity */
+  --pfmea-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.25), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
+  --pfmea-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --pfmea-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+}
+
+/* ===================================================================
+   Base Styles
+   =================================================================== */
+
+/* Global box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* PFMEA Table Styles */
+.pfmea-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--pfmea-font-family-primary);
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.pfmea-table th,
+.pfmea-table td {
+  border: 1px solid var(--pfmea-table-border);
+  padding: var(--pfmea-table-cell-padding);
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.pfmea-table thead th {
+  background-color: var(--pfmea-table-header-bg);
+  font-weight: var(--pfmea-font-weight-semibold);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.pfmea-table tbody tr:nth-child(even) td {
+  background-color: var(--pfmea-table-row-even);
+}
+
+/* AI-generated row highlight */
+.pfmea-ai-row,
+.pfmea-table .pfmea-ai-row td {
+  color: var(--pfmea-ai-generated);
+}
+
+/* PFMEA Table Container */
+.pfmea-ai-table-container {
+  max-height: 520px;
+  overflow-y: auto;
+  border: 1px solid var(--pfmea-table-container-border);
+  border-radius: var(--pfmea-radius-sm);
+  margin-bottom: var(--pfmea-spacing-md);
+}
+
+/* Alert/Status Styles */
+.pfmea-alert {
+  padding: var(--pfmea-spacing-md);
+  border-radius: var(--pfmea-radius-sm);
+  margin-bottom: var(--pfmea-spacing-md);
+}
+
+.pfmea-alert-success {
+  background-color: var(--pfmea-success-light);
+  border-left: 4px solid var(--pfmea-success);
+  color: var(--pfmea-text-primary);
+}
+
+.pfmea-alert-warning {
+  background-color: var(--pfmea-warning-light);
+  border-left: 4px solid var(--pfmea-warning);
+  color: var(--pfmea-text-primary);
+}
+
+.pfmea-alert-error {
+  background-color: var(--pfmea-error-light);
+  border-left: 4px solid var(--pfmea-error);
+  color: var(--pfmea-text-primary);
+}
+
+.pfmea-alert-info {
+  background-color: var(--pfmea-info-light);
+  border-left: 4px solid var(--pfmea-info);
+  color: var(--pfmea-text-primary);
+}
+
+/* Card Styles */
+.pfmea-card {
+  background-color: var(--pfmea-surface);
+  border: 1px solid var(--pfmea-border);
+  border-radius: var(--pfmea-radius-md);
+  padding: var(--pfmea-card-padding);
+  box-shadow: var(--pfmea-shadow-md);
+}
+
+.pfmea-card:hover {
+  box-shadow: var(--pfmea-shadow-lg);
+}
+
+/* Button & interactive transitions */
+[data-testid="stButton"] > button,
+button {
+  transition: var(--pfmea-transition-default);
+  box-shadow: var(--pfmea-shadow-none);
+}
+
+[data-testid="stButton"] > button:hover,
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--pfmea-shadow-md);
+}
+
+[data-testid="stButton"] > button:active,
+button:active {
+  transform: translateY(0);
+  box-shadow: var(--pfmea-shadow-sm);
+}
+
+/* Progress Panel */
+.pfmea-progress-panel {
+  padding: var(--pfmea-spacing-md);
+  background-color: var(--pfmea-surface-variant);
+  border-radius: var(--pfmea-radius-sm);
+  margin-bottom: var(--pfmea-spacing-md);
+}
+
+/* Utility Classes */
+.pfmea-text-primary { color: var(--pfmea-text-primary); }
+.pfmea-text-secondary { color: var(--pfmea-text-secondary); }
+.pfmea-text-disabled { color: var(--pfmea-text-disabled); }
+.pfmea-text-error { color: var(--pfmea-error); }
+.pfmea-text-success { color: var(--pfmea-success); }
+.pfmea-text-warning { color: var(--pfmea-warning); }
+.pfmea-text-info { color: var(--pfmea-info); }
+
+.pfmea-bg-surface { background-color: var(--pfmea-surface); }
+.pfmea-bg-surface-variant { background-color: var(--pfmea-surface-variant); }
+.pfmea-bg-background { background-color: var(--pfmea-background); }
+
+.pfmea-border { border: 1px solid var(--pfmea-border); }
+.pfmea-border-light { border: 1px solid var(--pfmea-border-light); }
+
+.pfmea-rounded-sm { border-radius: var(--pfmea-radius-sm); }
+.pfmea-rounded-md { border-radius: var(--pfmea-radius-md); }
+.pfmea-rounded-lg { border-radius: var(--pfmea-radius-lg); }
+.pfmea-rounded-full { border-radius: var(--pfmea-radius-full); }
+
+.pfmea-shadow-sm { box-shadow: var(--pfmea-shadow-sm); }
+.pfmea-shadow-md { box-shadow: var(--pfmea-shadow-md); }
+.pfmea-shadow-lg { box-shadow: var(--pfmea-shadow-lg); }
+
+/* Spacing Utilities */
+.pfmea-p-xs { padding: var(--pfmea-spacing-xs); }
+.pfmea-p-sm { padding: var(--pfmea-spacing-sm); }
+.pfmea-p-md { padding: var(--pfmea-spacing-md); }
+.pfmea-p-lg { padding: var(--pfmea-spacing-lg); }
+
+.pfmea-m-xs { margin: var(--pfmea-spacing-xs); }
+.pfmea-m-sm { margin: var(--pfmea-spacing-sm); }
+.pfmea-m-md { margin: var(--pfmea-spacing-md); }
+.pfmea-m-lg { margin: var(--pfmea-spacing-lg); }
+
+.pfmea-mb-sm { margin-bottom: var(--pfmea-spacing-sm); }
+.pfmea-mb-md { margin-bottom: var(--pfmea-spacing-md); }
+.pfmea-mb-lg { margin-bottom: var(--pfmea-spacing-lg); }
+
+.pfmea-gap-sm { gap: var(--pfmea-spacing-sm); }
+.pfmea-gap-md { gap: var(--pfmea-spacing-md); }
+.pfmea-gap-lg { gap: var(--pfmea-spacing-lg); }
+
+/* ===================================================================
+   Responsive Breakpoints
+   - Desktop: 1024px and above (default)
+   - Tablet: 768px - 1023px
+   - Mobile: below 768px
+   =================================================================== */
+
+/* Layout Container - Responsive padding */
+.pfmea-container {
+  width: 100%;
+  max-width: 100%;
+  padding-left: var(--pfmea-page-padding);
+  padding-right: var(--pfmea-page-padding);
+}
+
+/* Responsive Grid System */
+.pfmea-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pfmea-component-gap);
+}
+
+.pfmea-col {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Column Widths (Desktop) */
+.pfmea-col-1 { flex: 0 0 8.333%; max-width: 8.333%; }
+.pfmea-col-2 { flex: 0 0 16.667%; max-width: 16.667%; }
+.pfmea-col-3 { flex: 0 0 25%; max-width: 25%; }
+.pfmea-col-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+.pfmea-col-5 { flex: 0 0 41.667%; max-width: 41.667%; }
+.pfmea-col-6 { flex: 0 0 50%; max-width: 50%; }
+.pfmea-col-8 { flex: 0 0 66.667%; max-width: 66.667%; }
+.pfmea-col-12 { flex: 0 0 100%; max-width: 100%; }
+
+/* Metrics Grid - 5 columns on desktop */
+.pfmea-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--pfmea-spacing-md);
+}
+
+/* Header Row - flexible layout */
+.pfmea-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--pfmea-spacing-sm);
+}
+
+/* Selector Row - 2:1 layout */
+.pfmea-selector-row {
+  display: flex;
+  gap: var(--pfmea-spacing-md);
+}
+
+.pfmea-selector-row > :first-child {
+  flex: 2;
+  min-width: 0;
+}
+
+.pfmea-selector-row > :last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Responsive Table Wrapper */
+.pfmea-table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: var(--pfmea-spacing-md);
+}
+
+.pfmea-table-responsive .pfmea-table {
+  min-width: 600px;
+}
+
+/* ===================================================================
+   Tablet Breakpoint (768px - 1023px)
+   =================================================================== */
+
+@media screen and (max-width: 1023px) {
+  :root {
+    --pfmea-page-padding: var(--pfmea-spacing-md);
+  }
+
+  /* Metrics Grid - 3 columns on tablet */
+  .pfmea-metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Header Row - allow wrap */
+  .pfmea-header-row {
+    flex-wrap: wrap;
+  }
+
+  /* Table adjustments */
+  .pfmea-ai-table-container {
+    max-height: 400px;
+  }
+}
+
+/* ===================================================================
+   Mobile Breakpoint (below 768px)
+   =================================================================== */
+
+@media screen and (max-width: 767px) {
+  :root {
+    --pfmea-page-padding: var(--pfmea-spacing-sm);
+    --pfmea-section-gap: var(--pfmea-spacing-lg);
+    --pfmea-component-gap: var(--pfmea-spacing-sm);
+  }
+
+  /* All columns stack on mobile */
+  .pfmea-col-1,
+  .pfmea-col-2,
+  .pfmea-col-3,
+  .pfmea-col-4,
+  .pfmea-col-5,
+  .pfmea-col-6,
+  .pfmea-col-8 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* Metrics Grid - 2 columns on mobile */
+  .pfmea-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Selector Row - stack on mobile */
+  .pfmea-selector-row {
+    flex-direction: column;
+  }
+
+  .pfmea-selector-row > :first-child,
+  .pfmea-selector-row > :last-child {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Header Row - vertical stack */
+  .pfmea-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Table container - reduced height */
+  .pfmea-ai-table-container {
+    max-height: 350px;
+  }
+
+  /* Card padding reduction */
+  .pfmea-card {
+    padding: var(--pfmea-spacing-sm);
+  }
+
+  /* Typography scaling */
+  .pfmea-table {
+    font-size: 12px;
+  }
+
+  /* Button full width on mobile */
+  .pfmea-btn-full-mobile {
+    width: 100%;
+  }
+}
+
+/* ===================================================================
+   Print Styles
+   =================================================================== */
+
+@media print {
+  .pfmea-ai-table-container {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .pfmea-table thead th {
+    position: static;
+  }
+
+  .pfmea-shadow-sm,
+  .pfmea-shadow-md,
+  .pfmea-shadow-lg {
+    box-shadow: none;
+  }
+}
+
+/* ===================================================================
+   Accessibility Enhancements
+   =================================================================== */
+
+/* Focus visible styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--pfmea-primary);
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard users */
+.pfmea-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--pfmea-primary);
+  color: var(--pfmea-text-on-primary);
+  padding: var(--pfmea-spacing-sm) var(--pfmea-spacing-md);
+  z-index: 100;
+  text-decoration: none;
+  border-radius: var(--pfmea-radius-sm);
+}
+
+.pfmea-skip-link:focus {
+  top: var(--pfmea-spacing-sm);
+}
+
+/* Screen reader only content */
+.pfmea-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --pfmea-border: var(--pfmea-gray-900);
+    --pfmea-text-secondary: var(--pfmea-gray-800);
+  }
+
+  .pfmea-table th,
+  .pfmea-table td {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Accessible table styles */
+.pfmea-table[role="grid"] th[scope="col"],
+.pfmea-table[role="grid"] th[scope="row"] {
+  font-weight: var(--pfmea-font-weight-semibold);
+}
+
+/* Progress bar accessibility */
+.pfmea-progress[role="progressbar"] {
+  position: relative;
+}
+
+.pfmea-progress[role="progressbar"]::after {
+  content: attr(aria-valuenow) "%";
+  position: absolute;
+  right: var(--pfmea-spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--pfmea-font-size-xs);
+  color: var(--pfmea-text-secondary);
+}
+
+/* Status indicator with aria-live regions */
+.pfmea-status[aria-live] {
+  padding: var(--pfmea-spacing-sm);
+}
+
+/* Interactive element minimum touch target (44x44px for WCAG 2.5.5) */
+.pfmea-touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Link underline for better visibility */
+.pfmea-content a:not(.pfmea-btn) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

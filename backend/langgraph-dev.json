@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/langchain-ai/langgraph/refs/heads/main/libs/cli/schemas/schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "drassist": "./drassist/graph.py:graph",
+    "drassist-ebara": "./drassist/graph.py:graph_ebara",
+    "debug-auth": "./drassist/debug.py:graph"
+  },
+  "env": ".env",
+  "image_distro": "wolfi",
+  "python_version": "3.13"
+}

@@ -1,0 +1,153 @@
+# ===========================================================================
+# DrawerAI Technology Review System - Production Docker Compose
+# ===========================================================================
+# 本番環境用のDocker Compose設定
+# 
+# 使用方法:
+#   docker-compose -f docker-compose.production.yml up -d
+#
+# 注意:
+#   - 本番環境では、Kubernetes等のオーケストレーションツールの使用を推奨
+#   - この設定は、本番環境の構成を確認するためのリファレンスとして使用
+# ===========================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Backend API Service
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: drawerai-backend-prod
+    environment:
+      # 環境設定
+      - ENVIRONMENT=production
+      - TENANT_ID=${TENANT_ID:-default}
+      - APP_NAME=${APP_NAME:-drawer-ai-tech-review}
+      
+      # セキュリティ
+      - SECRET_KEY=${SECRET_KEY}
+      
+      # AuthN Platform
+      - AUTHN_PLATFORM_URL=${AUTHN_PLATFORM_URL}
+      - AUTHN_INTERNAL_TOKEN=${AUTHN_INTERNAL_TOKEN}
+      
+      # LLM
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LLM_MODEL_NAME_FLASH=${LLM_MODEL_NAME_FLASH:-gemini-2.5-flash}
+      
+      # LangGraph Platform / LangSmith
+      - LANGGRAPH_SERVER_URL=${LANGGRAPH_SERVER_URL}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-drawer-ai-tech-review}
+      - LANGSMITH_ENDPOINT=${LANGSMITH_ENDPOINT:-https://langsmith.zoolake.jp}
+      - WORKFLOW_NAME=${WORKFLOW_NAME:-tech-review-workflow}
+      
+      # Search Platform (Elasticsearch)
+      - SEARCH_BACKEND=elasticsearch
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
+      - ELASTICSEARCH_API_KEY=${ELASTICSEARCH_API_KEY}
+      - ELASTICSEARCH_INDEX_PREFIX=${ELASTICSEARCH_INDEX_PREFIX:-drawer-ai}
+      
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # Redis
+      - REDIS_URL=${REDIS_URL}
+      
+      # CORS
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - drawerai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # Frontend Service
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
+    container_name: drawerai-frontend-prod
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - drawerai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # Nginx Reverse Proxy (Optional - for local testing)
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: drawerai-nginx-prod
+    volumes:
+      - ./nginx/nginx.production.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - drawerai-network
+
+networks:
+  drawerai-network:
+    driver: bridge
+
+# ===========================================================================
+# 注意事項
+# ===========================================================================
+# 1. 本番環境では以下のサービスは外部から提供されます：
+#    - PostgreSQL: DATABASE_URL で指定
+#    - Redis: REDIS_URL で指定
+#    - Elasticsearch: ELASTICSEARCH_URL で指定
+#    - AuthN Platform: AUTHN_PLATFORM_URL で指定
+#    - LangGraph Platform: LANGGRAPH_SERVER_URL で指定
+#
+# 2. シークレット管理:
+#    - 環境変数は直接設定せず、Docker Secrets や Kubernetes Secrets を使用
+#    - GOOGLE_API_KEY, SECRET_KEY, ELASTICSEARCH_API_KEY は特に注意
+#
+# 3. スケーリング:
+#    - Kubernetes等を使用する場合は、HPA設定を追加
+#    - バックエンドは水平スケーリング可能
+# ===========================================================================
+

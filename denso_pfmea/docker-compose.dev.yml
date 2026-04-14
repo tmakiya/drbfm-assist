@@ -1,0 +1,26 @@
+# Development Docker Compose - Frontend only
+# Backend runs on host with: langgraph dev --host 0.0.0.0 --port 8124
+
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://host.docker.internal:8124
+      - GRAPH_ID=pfmea-workflow
+      - LOG_LEVEL=DEBUG
+      - ENVIRONMENT=development
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - pfmea-dev-network
+    restart: unless-stopped
+
+networks:
+  pfmea-dev-network:
+    driver: bridge

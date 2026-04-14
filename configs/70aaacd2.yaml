@@ -1,0 +1,35 @@
+tenant_id: 70aaacd2
+
+data:
+  file_path: data/70aaacd2/csv/defects.csv
+  preprocessed: true
+
+elasticsearch:
+  index: 70aaacd2_defects
+  mapping_file: drassist/spec/elasticsearch/defects_70aaacd2.json
+
+search:
+  fields:
+    - "title"
+    - "content"
+    - "cause"
+    - "countermeasure" 
+    - "recurrence_prevention"
+
+unit_list:
+  - ボデー
+  - ステムベアリング
+  - ステム
+  - ステンレス鋼製ダイヤフラムバルブ
+
+normalized_notation_dict:
+  # カタカナ表記の統一
+  # 略語・アルファベット表記の統一
+  # 漢字・ひらがな・送り仮名の統一
+  # 同義語・類義語の統一
+  # その他の統一
+
+  
+llm:
+  model_name: gemini-2.5-flash
+  temperature: 0

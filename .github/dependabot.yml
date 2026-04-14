@@ -1,0 +1,145 @@
+version: 2
+updates:
+  # ルートディレクトリ
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # backend
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # ui
+  - package-ecosystem: "pip"
+    directory: "/ui"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # ingestion
+  - package-ecosystem: "pip"
+    directory: "/ingestion"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # denso_pfmea/backend
+  - package-ecosystem: "pip"
+    directory: "/denso_pfmea/backend"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # denso_pfmea/frontend
+  - package-ecosystem: "pip"
+    directory: "/denso_pfmea/frontend"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # suzuki-technology-trends/backend
+  - package-ecosystem: "pip"
+    directory: "/suzuki-technology-trends/backend"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # suzuki-technology-trends/frontend (npm)
+  - package-ecosystem: "npm"
+    directory: "/suzuki-technology-trends/frontend"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"

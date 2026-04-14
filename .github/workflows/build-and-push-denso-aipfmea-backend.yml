@@ -1,0 +1,83 @@
+name: Build and Push Denso AI-PFMEA Backend Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'denso_pfmea/backend/**'
+      - '.github/workflows/build-and-push-denso-aipfmea-backend.yml'
+  workflow_dispatch:
+
+env:
+  REGISTRY: asia-northeast1-docker.pkg.dev
+  REPOSITORY: images
+  IMAGE_NAME: agent-platform-denso-aipfmea-backend
+  WORKING_DIR: denso_pfmea/backend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.13'
+
+      - name: Install LangGraph CLI
+        run: pip install langgraph-cli
+
+      - name: GCP Auth to GAR
+        uses: caddijp/gh-actions/docker/auth/gcp@abdb841ee2a491aa6f67c2be0efb3af8cc52d18b # v0.61.1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WI_PROVIDER }}
+          service_account: ${{ secrets.GCP_WI_SERVICE_ACCOUNT }}
+          registry: asia-northeast1-docker.pkg.dev
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Generate Dockerfile with LangGraph CLI
+        working-directory: ${{ env.WORKING_DIR }}
+        run: langgraph dockerfile ./Dockerfile
+
+      - name: Build image tags
+        id: image-tag
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BASE_IMAGE="${{ env.REGISTRY }}/${PROJECT_ID}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}"
+
+          TAGS="-t ${BASE_IMAGE}:${SHORT_SHA}"
+          TAGS="${TAGS} -t ${BASE_IMAGE}:latest"
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "Image tags:"
+          echo "$TAGS"
+
+      - name: Build and push Docker image
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            ${{ steps.image-tag.outputs.tags }} \
+            -f ./Dockerfile \
+            .
+
+      - name: Output image URL
+        run: |
+          echo "Image pushed with tags:"
+          echo "${{ steps.image-tag.outputs.tags }}"

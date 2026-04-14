@@ -1,0 +1,120 @@
+name: Build and Push Denso AI-PFMEA Frontend Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'denso_pfmea/frontend/**'
+      - '.github/workflows/build-and-push-denso-aipfmea-frontend.yml'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'           # prod: v1.0.0, v1.2.3, etc.
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+' # stg: v1.0.0-rc.1, v1.2.3-rc.0, etc.
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+
+env:
+  REGISTRY: asia-northeast1-docker.pkg.dev
+  REPOSITORY: images
+  IMAGE_NAME: agent-platform-denso-aipfmea-frontend
+
+jobs:
+  determine-environment:
+    uses: ./.github/workflows/determine-environment.yml
+    with:
+      manual_environment: ${{ inputs.environment }}
+
+  build-and-push:
+    needs: determine-environment
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set overlay path
+        id: overlay-path
+        run: |
+          echo "path=applications/agent-ui-infra/overlays/${{ needs.determine-environment.outputs.environment }}" >> $GITHUB_OUTPUT
+
+      - name: GCP Auth to GAR
+        uses: caddijp/gh-actions/docker/auth/gcp@abdb841ee2a491aa6f67c2be0efb3af8cc52d18b # v0.61.1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WI_PROVIDER }}
+          service_account: ${{ secrets.GCP_WI_SERVICE_ACCOUNT }}
+          registry: asia-northeast1-docker.pkg.dev
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Build image tags
+        id: tags
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          ENVIRONMENT: ${{ needs.determine-environment.outputs.environment }}
+          VERSION: ${{ needs.determine-environment.outputs.version }}
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BASE_IMAGE="${{ env.REGISTRY }}/${PROJECT_ID}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}"
+
+          # Base tags (always included)
+          TAGS="${BASE_IMAGE}:${SHORT_SHA}"
+          TAGS="${TAGS},${BASE_IMAGE}:${ENVIRONMENT}-latest"
+          TAGS="${TAGS},${BASE_IMAGE}:latest"
+
+          # Add version tag for tagged releases
+          if [[ "$VERSION" == v* ]]; then
+            TAGS="${TAGS},${BASE_IMAGE}:${VERSION}"
+          fi
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "Image tags:"
+          echo "$TAGS" | tr ',' '\n'
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: ./denso_pfmea/frontend
+          file: ./denso_pfmea/frontend/Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Output image URL
+        id: output
+        run: |
+          echo "Image pushed with tags:"
+          echo "${{ steps.tags.outputs.tags }}" | tr ',' '\n'
+          echo "short_sha=${{ steps.tags.outputs.short_sha }}" >> $GITHUB_OUTPUT
+
+      - name: Trigger cluster config update
+        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
+        with:
+          token: ${{ secrets.MACHINE_USER_PAT_FOR_REPO_DISPATCH }}
+          repository: caddijp/zoolake-cluster-config
+          event-type: edit-image-tag
+          client-payload: |
+            {
+              "rewrite_paths": "${{ steps.overlay-path.outputs.path }}",
+              "gcr_host_name": "${{ env.REGISTRY }}",
+              "project_name": "denso-aipfmea-frontend",
+              "image_name": "images/${{ env.IMAGE_NAME }}",
+              "image_tag": "${{ steps.output.outputs.short_sha }}",
+              "gcp_project_id": "${{ secrets.GCP_PROJECT_ID }}",
+              "rewrite_branch_name": "main"
+            }

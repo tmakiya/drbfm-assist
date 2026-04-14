@@ -1,0 +1,81 @@
+# =============================================================================
+# Batch Processing Configuration
+# Used by: run_batch_processing
+# Purpose: Controls micro-batch size
+# =============================================================================
+batch_processing:
+  batch_size: 1000
+
+# =============================================================================
+# Chunking Configuration
+# Used by: explode_rows_by_text_chunks
+# Purpose: Controls chunk size and overlap for text splitting
+# =============================================================================
+chunking:
+  chunk_size: 3000
+  chunk_overlap: 100
+
+# =============================================================================
+# Embedding Generation Configuration
+# Used by: build_dataframe_with_embeddings function
+# Purpose: Defines the model and settings for vector embedding generation
+# =============================================================================
+embedding_generation:
+  model: gemini-embedding-001
+  source_field: ocr_text_snippet
+  task_type: RETRIEVAL_DOCUMENT
+  dimensionality: 768
+  normalize: true
+  max_workers: 20
+
+# =============================================================================
+# ISP (Interactive Search Platform) Configuration
+# Used by: ingest_suzuki_to_isp function
+# Purpose: Defines index settings, field mappings, and document structure for ISP
+# =============================================================================
+isp:
+  index_name: suzuki-technology-trends
+  id_field: doc_id
+
+  # Auto-added fields, if present in the DataFrame: [doc_id, embedding, chunk_id, total_chunks]
+  fields:
+    drawing_id: drawing_id
+    components_theme: components_theme
+    issue_theme: issue_theme
+    technology_theme: technology_theme
+    project: project
+    ocr_text_snippet: ocr_text_snippet
+
+  mappings:
+    properties:
+      doc_id:
+        type: long
+      chunk_id:
+        type: long
+      total_chunks:
+        type: long
+      drawing_id:
+        type: string
+        matching: [exact]
+      components_theme:
+        type: string # list[string]
+        matching: [exact]
+      issue_theme:
+        type: string # list[string]
+        matching: [exact]
+      technology_theme:
+        type: string # list[string]
+        matching: [exact]
+      project:
+        type: string
+        matching: [exact]
+      ocr_text_snippet:
+        type: string
+        matching: [japanese]
+      embedding:
+        type: dense_vector
+        dims: 768
+        index: true
+        similarity: dot_product
+        options:
+          type: int8_hnsw

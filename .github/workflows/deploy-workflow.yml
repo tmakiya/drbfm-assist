@@ -1,0 +1,112 @@
+name: Build and Push Workflow Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-workflow.yml'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'           # prod: v1.0.0, v1.2.3, etc.
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+' # stg: v1.0.0-rc.1, v1.2.3-rc.0, etc.
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+
+env:
+  REGISTRY: asia-northeast1-docker.pkg.dev
+  REPOSITORY: images
+  IMAGE_NAME: agent-platform-drbfm-assist-workflow
+
+jobs:
+  determine-environment:
+    uses: ./.github/workflows/determine-environment.yml
+    with:
+      manual_environment: ${{ inputs.environment }}
+
+  build-and-push:
+    needs: determine-environment
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Install LangGraph CLI
+        run: |
+          pip install langgraph-cli
+
+      - name: GCP Auth to GAR
+        uses: caddijp/gh-actions/docker/auth/gcp@abdb841ee2a491aa6f67c2be0efb3af8cc52d18b # v0.61.1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WI_PROVIDER }}
+          service_account: ${{ secrets.GCP_WI_SERVICE_ACCOUNT }}
+          registry: asia-northeast1-docker.pkg.dev
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Generate Dockerfile with LangGraph CLI
+        working-directory: ./backend
+        run: |
+          langgraph dockerfile ./Dockerfile
+
+      - name: Build image tags
+        id: image-tag
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          ENVIRONMENT: ${{ needs.determine-environment.outputs.environment }}
+          VERSION: ${{ needs.determine-environment.outputs.version }}
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          BASE_IMAGE="${{ env.REGISTRY }}/${PROJECT_ID}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}"
+
+          # Base tags (always included)
+          TAGS="-t ${BASE_IMAGE}:${SHORT_SHA}"
+          TAGS="${TAGS} -t ${BASE_IMAGE}:${ENVIRONMENT}-latest"
+          TAGS="${TAGS} -t ${BASE_IMAGE}:latest"
+
+          # Add version tag for tagged releases
+          if [[ "$VERSION" == v* ]]; then
+            TAGS="${TAGS} -t ${BASE_IMAGE}:${VERSION}"
+          fi
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "Image tags:"
+          echo "$TAGS"
+
+      - name: Build and push Docker image
+        working-directory: ./backend
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            ${{ steps.image-tag.outputs.tags }} \
+            -f ./Dockerfile \
+            .
+
+      - name: Output image URL
+        run: |
+          echo "Image pushed with tags:"
+          echo "${{ steps.image-tag.outputs.tags }}"

@@ -1,0 +1,55 @@
+tenant_id: 8d8232f3
+
+data:
+  file_path: data/ebara/structured_20251012.csv
+  preprocessed: true
+
+isp:
+  # ISP alias format: {type}_{tenant_id}
+  index: drbfm-assist-defects_a7753ab8-12e3-44f0-9ae6-9e85637b890e
+
+# Legacy elasticsearch config (for backward compatibility)
+elasticsearch:
+  index: drbfm-assist-defects_a7753ab8-12e3-44f0-9ae6-9e85637b890e
+  mapping_file: drassist/spec/elasticsearch/defects_8d8232f3.json
+
+search:
+  fields:
+    - "title"
+    - "content"
+    - "cause"
+    - "countermeasure"
+    - "recurrence_prevention"
+
+unit_list:
+  - スラリー供給ユニット（タンク/攪拌/配管/流量制御/レベル）
+  - 循環・濾過ユニット（フィルタ/循環ポンプ/バイパス）
+  - ケミカル・添加剤供給（酸化剤/加速剤/防食剤/DIW/薬液配管）
+  - プラテン/パッド系（プラテン/パッド/バックパッド）
+  - パッドコンディショナ（アーム/モータ/ダイヤモンドディスク）
+  - ポリッシングヘッド/キャリア（ゾーン/ダイアフラム/リテーナリング/バックフィルム）
+  - リテーナリング
+  - 洗浄装置（ブラシ/ジェット/メガソニック/ノズル）
+  - 乾燥装置（SRD/スピン乾燥）
+  - 搬送/ハンドラ/ロボット（アーム/アライナ/ベルヌイチャック）
+  - 温調ユニット（チラー/ヒータ/熱交換器）
+  - 圧空/真空系（レギュレータ/配管/シール）
+  - センサ・計測（圧力/流量/温度/トルク/エンドポイント/振動）
+  - 制御装置/PLC/HMI
+  - 安全装置/インタロック
+  - 電装/電送（電源/配線/コネクタ）
+  - 排気/ミスト除去（スクラバー/ダクト）
+  - ドレイン/廃液処理
+  - ユーティリティ（DIW/薬液/N2/CDA）
+  - 外装・筐体/フレーム
+  - フィクスチャ/クランプ/治具
+
+normalized_notation_dict:
+  # TODO: 荏原製作所用の正規化辞書を作成
+  アウタ:
+    - アウター
+
+# model_numbers: Disabled for ISP testing (index doesn't have model_number field)
+model_numbers:
+  confidential: []
+  production: []

@@ -1,0 +1,118 @@
+
+services:
+  # PostgreSQLデータベース
+  db:
+    image: postgres:15-alpine
+    container_name: drawerai-db
+    environment:
+      POSTGRES_DB: drawerai
+      POSTGRES_USER: drawerai_user
+      POSTGRES_PASSWORD: drawerai_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U drawerai_user -d drawerai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - drawerai-network
+
+  # Redis（キャッシュ・キュー用）
+  redis:
+    image: redis:7-alpine
+    container_name: drawerai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - drawerai-network
+
+  # FastAPIバックエンド
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: drawerai-backend
+    environment:
+      - DATABASE_URL=postgresql://drawerai_user:drawerai_password@db:5432/drawerai
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-credentials.json
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-please}
+      - LLM_MODEL_NAME_FLASH=${LLM_MODEL_NAME_FLASH:-gemini-2.5-flash}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-models/embedding-001}
+      - UPLOAD_DIR=/app/uploads
+      - RAG_INDEX_DIR=/app/rag_indices
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./shared:/app/shared:ro
+      - uploads_data:/app/uploads
+      - rag_indices_data:/app/rag_indices
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏳ Waiting for database to be ready...' &&
+        sleep 10 &&
+        echo '📊 Initializing database...' &&
+        python scripts/init_db.py 2>&1 || echo '⚠️  Database init skipped or failed' &&
+        echo '🔄 Running migrations...' &&
+        alembic upgrade head 2>&1 || echo '⚠️  Migration skipped or failed' &&
+        echo '🚀 Starting FastAPI server...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    networks:
+      - drawerai-network
+
+  # Next.jsフロントエンド
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: drawerai-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: npm run dev
+    networks:
+      - drawerai-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+  rag_indices_data:
+
+networks:
+  drawerai-network:
+    driver: bridge
+

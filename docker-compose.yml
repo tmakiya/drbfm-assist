@@ -1,0 +1,112 @@
+services:
+  # Backend LangGraph API
+  # Note: Generate Dockerfile first with: langgraph dockerfile ./Dockerfile
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: drbfm-backend
+    ports:
+      - "8123:8123"
+    env_file:
+      - ./backend/.env
+    environment:
+      - ISP_URL=http://interactive-search-platform:50080
+    networks:
+      - rag-network
+    depends_on:
+      interactive-search-platform:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123/ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Frontend Streamlit UI
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: drbfm-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8123
+      - GRAPH_ID=drassist-ebara
+      - ENVIRONMENT=${ENVIRONMENT:-development}  # Set to "production" in prod
+    networks:
+      - rag-network
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.3
+    container_name: es01
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    command: >
+      bash -c "
+        elasticsearch-plugin list | grep -q analysis-kuromoji || elasticsearch-plugin install analysis-kuromoji --batch &&
+        elasticsearch-plugin list | grep -q analysis-icu || elasticsearch-plugin install analysis-icu --batch &&
+        /usr/local/bin/docker-entrypoint.sh eswrapper
+      "
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.3
+    container_name: kib01
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
+    ports:
+      - "5601:5601"
+    networks:
+      - rag-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # Interactive Search Platform
+  # Includes Elasticsearch, Kibana, and ISP API pre-configured
+  interactive-search-platform:
+    image: asia-northeast1-docker.pkg.dev/caddi-registry/images/interactive-search-platform-local:v1.4.0
+    container_name: interactive-search-platform
+    ports:
+      - "50080:50080"  # ISP API
+      - "59200:59200"  # Elasticsearch (ISP internal)
+      - "55601:55601"  # Kibana (ISP internal)
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:50080/_health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  rag-network:
+    driver: bridge

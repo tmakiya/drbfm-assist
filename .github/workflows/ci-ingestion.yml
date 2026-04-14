@@ -1,0 +1,45 @@
+name: CI Ingestion
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ingestion/**'
+      - '.github/workflows/ci-ingestion.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ingestion/**'
+      - '.github/workflows/ci-ingestion.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "ingestion/uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --dev
+        working-directory: ingestion
+
+      - name: Lint
+        run: |
+          uvx ruff format --config=pyproject.toml --check ingestion/
+          uvx ruff check --config=pyproject.toml ingestion/
+
+      - name: Test
+        run: uv run pytest -v --tb=short
+        working-directory: ingestion

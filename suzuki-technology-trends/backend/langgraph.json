@@ -1,0 +1,13 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "drawer-ai": "agent.graph:graph"
+  },
+  "auth": {
+    "path": "agent.auth:auth"
+  },
+  "env": ".env",
+  "python_version": "3.13",
+  "image_distro": "wolfi"
+}

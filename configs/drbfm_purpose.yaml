@@ -1,0 +1,14 @@
+tenant_id: drbfm_purpose
+
+data:
+  file_path: data/purpose/DRBFM/DRBFM_GX-KHFLO2Q(A)WS_20251201.csv
+
+elasticsearch:
+  index: drbfm_purpose
+  mapping_file: drassist/spec/elasticsearch/drbfm_purpose.json
+
+search:
+  # Step 2のベクトル検索で取得する上位件数
+  vector_search_size: 20
+  # Step 3のLLMフィルタリングに渡す上位件数
+  llm_filter_top_k: 10

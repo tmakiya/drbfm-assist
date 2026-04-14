@@ -1,0 +1,97 @@
+{
+    "settings": {
+        "number_of_replicas": 0,
+        "analysis": {
+            "tokenizer": {
+                "japanese_tokenizer": {
+                    "type": "kuromoji_tokenizer",
+                    "mode": "search",
+                    "discard_compound_token": true
+                }
+            },
+            "analyzer": {
+                "japanese_analyzer": {
+                    "type": "custom",
+                    "tokenizer": "japanese_tokenizer",
+                    "filter": [
+                        "kuromoji_baseform",
+                        "kuromoji_part_of_speech",
+                        "cjk_width",
+                        "ja_stop",
+                        "kuromoji_stemmer",
+                        "lowercase"
+                    ]
+                }
+            }
+        }
+    },
+    "mappings": {
+        "properties": {
+            "doc_id": {
+                "type": "integer"
+            },
+            "source_file": {
+                "type": "keyword"
+            },
+            "product": {
+                "type": "keyword"
+            },
+            "part": {
+                "type": "text",
+                "analyzer": "japanese_analyzer",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "change_point": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "change_point_embedding": {
+                "type": "dense_vector",
+                "dims": 3072,
+                "index": true,
+                "similarity": "dot_product",
+                "index_options": {
+                    "type": "int8_hnsw",
+                    "m": 16,
+                    "ef_construction": 100
+                }
+            },
+            "function": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "failure_mode": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "cause": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "effect": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "countermeasure": {
+                "type": "text",
+                "analyzer": "japanese_analyzer"
+            },
+            "source_type": {
+                "type": "keyword"
+            },
+            "source_id": {
+                "type": "keyword"
+            },
+            "section": {
+                "type": "keyword"
+            },
+            "function_category": {
+                "type": "keyword"
+            }
+        }
+    }
+}

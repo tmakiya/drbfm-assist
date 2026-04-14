@@ -1,0 +1,150 @@
+# =============================================================================
+# Unit List for Image Analysis Prompt
+# Used by: common/pipelines/defects/config.py (_build_system_instruction)
+# Purpose: Substituted into {{unit_list}} placeholder in prompt template
+# =============================================================================
+unit_list:
+  - スラリー供給ユニット（タンク/攪拌/配管/流量制御/レベル）
+  - 循環・濾過ユニット（フィルタ/循環ポンプ/バイパス）
+  - ケミカル・添加剤供給（酸化剤/加速剤/防食剤/DIW/薬液配管）
+  - プラテン/パッド系（プラテン/パッド/バックパッド）
+  - パッドコンディショナ（アーム/モータ/ダイヤモンドディスク）
+  - ポリッシングヘッド/キャリア（ゾーン/ダイアフラム/リテーナリング/バックフィルム）
+  - リテーナリング
+  - 洗浄装置（ブラシ/ジェット/メガソニック/ノズル）
+  - 乾燥装置（SRD/スピン乾燥）
+  - 搬送/ハンドラ/ロボット（アーム/アライナ/ベルヌイチャック）
+  - 温調ユニット（チラー/ヒータ/熱交換器）
+  - 圧空/真空系（レギュレータ/配管/シール）
+  - センサ・計測（圧力/流量/温度/トルク/エンドポイント/振動）
+  - 制御装置/PLC/HMI
+  - 安全装置/インタロック
+  - 電装/電送（電源/配線/コネクタ）
+  - 排気/ミスト除去（スクラバー/ダクト）
+  - ドレイン/廃液処理
+  - ユーティリティ（DIW/薬液/N2/CDA）
+  - 外装・筐体/フレーム
+  - フィクスチャ/クランプ/治具
+
+# =============================================================================
+# Image Analysis Configuration
+# Used by: common/pipelines/defects/processing.py (analyze_groups_parallel)
+# Purpose: Defines the model and JSON schema for structured output from Gemini API
+# =============================================================================
+image_analysis:
+  model: gemini-2.5-flash-lite
+  response_schema:
+    type: object
+    properties:
+      cause_unit:
+        type: string
+        description: "原因ユニット・装置の名称"
+      cause_part:
+        type: array
+        items:
+          type: string
+        description: "原因部品のリスト"
+      unit_part_change:
+        type: string
+        description: "部品やユニットの変化・問題"
+      occurrence_condition:
+        type: string
+        description: "発生条件・状況"
+      failure_mode:
+        type: string
+        description: "故障モード・現象"
+      failure_effect:
+        type: string
+        description: "故障の影響・リスク"
+      countermeasures:
+        type: string
+        description: "対策方法"
+      reasoning:
+        type: string
+        description: "判断理由・文書の性質"
+    required:
+      - cause_unit
+      - cause_part
+      - unit_part_change
+      - occurrence_condition
+      - failure_mode
+      - failure_effect
+      - countermeasures
+      - reasoning
+
+# =============================================================================
+# Embedding Generation Configuration
+# Used by: common/pipelines/defects/processing.py (build_dataframe_with_embeddings)
+# Purpose: Defines the model and settings for vector embedding generation
+# =============================================================================
+embedding_generation:
+  model: gemini-embedding-001
+  source_field: unit_part_change
+  task_type: RETRIEVAL_DOCUMENT
+  dimensionality: 3072
+
+# =============================================================================
+# ISP (Interactive Search Platform) Configuration
+# Used by: common/pipelines/defects/ingest.py (ingest_dataframe_to_isp)
+# Purpose: Defines index settings, field mappings, and document structure for ISP
+# =============================================================================
+isp:
+  index_name: defects
+  id_field: doc_id
+
+  # Auto-added fields, if present in the DataFrame: [doc_id, embedding, chunk_id, total_chunks]
+  fields:
+    original_id: original_id
+    countermeasures: countermeasures
+
+    cause:
+      original: cause_original
+      unit: cause_unit
+      part: cause_part
+      part_change: unit_part_change
+
+    failure:
+      mode: failure_mode
+      effect: failure_effect
+
+  mappings:
+    properties:
+      doc_id:
+        type: long
+      original_id:
+        type: string
+        matching: [exact]
+      countermeasures:
+        type: string
+        matching: [japanese]
+      cause:
+        type: object
+        properties:
+          original:
+            type: string
+            matching: [japanese]
+          unit:
+            type: string
+            matching: [exact]
+          part:
+            type: string
+            matching: [japanese]
+          part_change:
+            type: string
+            matching: [japanese]
+      failure:
+        type: object
+        properties:
+          mode:
+            type: string
+            matching: [japanese]
+          effect:
+            type: string
+            matching: [japanese]
+      embedding:
+        type: dense_vector
+        dims: 3072
+        index: true
+        similarity: dot_product
+        options:
+          type: int8_hnsw

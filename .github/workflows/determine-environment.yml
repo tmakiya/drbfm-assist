@@ -1,0 +1,81 @@
+name: Determine Deployment Environment
+
+on:
+  workflow_call:
+    inputs:
+      manual_environment:
+        description: 'Manually specified environment for workflow_dispatch'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      environment:
+        description: 'Internal environment name (dev/stg/prod)'
+        value: ${{ jobs.determine.outputs.environment }}
+      github_environment:
+        description: 'GitHub Environment name (zoolake-dev/zoolake-stg-e3979/zoolake-prod)'
+        value: ${{ jobs.determine.outputs.github_environment }}
+      version:
+        description: 'Version tag for the deployment'
+        value: ${{ jobs.determine.outputs.version }}
+
+jobs:
+  determine:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      github_environment: ${{ steps.set-env.outputs.github_environment }}
+      version: ${{ steps.set-env.outputs.version }}
+    steps:
+      - name: Determine environment from tag, branch, or input
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual trigger
+            ENV="${{ inputs.manual_environment }}"
+            VERSION="manual-$(date +%Y%m%d-%H%M%S)"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Tag-based deployment
+            TAG="${{ github.ref_name }}"
+            if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              # Production tag: v1.0.0
+              ENV="prod"
+              VERSION="$TAG"
+            elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+              # Staging tag: v1.0.0-rc.1
+              ENV="stg"
+              VERSION="$TAG"
+            else
+              echo "Error: Invalid tag format: $TAG"
+              exit 1
+            fi
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            # Main branch push (dev)
+            ENV="dev"
+            VERSION="dev-$(echo ${{ github.sha }} | cut -c1-7)"
+          else
+            echo "Error: Unexpected trigger"
+            exit 1
+          fi
+
+          # Map internal environment names to GitHub Environment names
+          case "$ENV" in
+            dev)
+              GITHUB_ENV="zoolake-dev"
+              ;;
+            stg)
+              GITHUB_ENV="zoolake-stg-e3979"
+              ;;
+            prod)
+              GITHUB_ENV="zoolake-prod"
+              ;;
+            *)
+              echo "Error: Unknown environment: $ENV"
+              exit 1
+              ;;
+          esac
+
+          echo "environment=${ENV}" >> $GITHUB_OUTPUT
+          echo "github_environment=${GITHUB_ENV}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Deploying to environment: ${ENV} (GitHub Environment: ${GITHUB_ENV}) with version: ${VERSION}"

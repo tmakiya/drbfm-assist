@@ -1,0 +1,92 @@
+[project]
+name = "drbfm-assist-prototype"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10.18"
+dependencies = [
+    "loguru>=0.7.0",
+    "pandas>=2.0.0",
+    "elasticsearch>=8.0.0,<9.0.0",
+    "pyyaml>=6.0.0",
+    "python-dotenv>=1.0.0",
+    "tqdm>=4.65.0",
+    "asyncio>=3.4.3",
+    "openai>=1.97.1",
+    "click>=8.2.1",
+    "pydantic>=2.11.7",
+    "langgraph>=0.6.2",
+    "langfuse>=3.2.1",
+    "langchain>=0.3.27",
+    "google-genai>=0.7.0",
+    "google-cloud-aiplatform>=1.60.0",
+    "google-cloud-storage>=2.0.0",
+    "google-auth>=2.0.0",
+    "pre-commit>=4.2.0",
+    "openinference-instrumentation-google-genai>=0.1.5",
+    "tenacity>=8.2.0",
+    "pyppeteer>=0.0.25",
+    "scikit-learn>=1.3.0",
+    "db-dtypes>=1.4.3",
+    "streamlit>=1.51.0",
+    "trino>=0.329.0",
+    "requests>=2.31.0",
+    "requests[socks]>=2.31.0",
+    "pyjwt>=2.8.0",
+    "httpx>=0.28.1",
+    "authlib>=1.3.0",
+    "pysocks>=1.7.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipdb>=0.13.13",
+    "ipython>=8.37.0",
+    "jupyter>=1.1.1",
+    "poethepoet>=0.37.0",
+    "pre-commit>=4.2.0",
+    "pytest>=9.0.2",
+    "ruff>=0.12.7",
+]
+
+[tool.ruff]
+line-length=110
+force-exclude = true
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "F", # pyflakes
+    "E", # pycodestyle
+    "W", # pycodestyle warnings
+    "I", # isort
+    "D", # pydocstyle
+]
+ignore = [
+    "D1",
+    "D400", # blank-line-before-class-docstring
+    "D205", # blank-line-after-summary
+    "D415", # ends-in-punctuation
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"scripts/preprocess/**" = ["E501", "W291"]
+
+[tool.poe.tasks.preprocess_6307204b]
+sequence = [
+    {cmd = "uv run python -m scripts.preprocess.202508_6307204b_aqos_stage1 data/6307204b/AQOS.csv data/6307204b/preprocessed_stage1.csv"},
+    {cmd = "uv run python -m scripts.preprocess.202508_6307204b_aqos_extract_attributes_stage2 data/6307204b/preprocessed_stage1.csv data/6307204b/preprocessed_stage2.csv"},
+    {cmd = "uv run python -m scripts.preprocess.202508_6307204b_aqos_normalize_cause_unit_stage3 data/6307204b/preprocessed_stage2.csv data/6307204b/preprocessed_stage3.csv"},
+    {cmd = "uv run python -m scripts.preprocess.202508_6307204b_aqos_normalize_cause_parts_stage4 data/6307204b/preprocessed_stage3.csv data/6307204b/preprocessed_stage4.csv"}
+]
+help = "Run the full preprocess pipeline for 6307204b AQOS data"
+
+[tool.poe.tasks.preprocess_8d8232f3]
+sequence = [
+    {cmd = "uv run python -m scripts.preprocess.20250901_8d8232f3_download --data-dir data/8d8232f3/raw/drawing --query-mode drawing"},
+    {cmd = "uv run python -m scripts.preprocess.20250901_8d8232f3_structuring_png data/8d8232f3/raw/drawing/metadata.csv data/8d8232f3/raw/drawing data/8d8232f3/ingestion.csv"}
+]
+help = "Run the full ingestion pipeline for 8d8232f3 data"
